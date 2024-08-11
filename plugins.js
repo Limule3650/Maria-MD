@@ -7,15 +7,20 @@ const chalk = require('chalk')
 const FileType = require('file-type')
 const path = require('path')
 const axios = require('axios')
+const Config = require("./Config")
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./Gallery/lib/exif')
-const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./Gallery/lib/myfunc')
-const { default: MariaConnect, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto, Browsers } = require("@whiskeysockets/baileys")
+const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./Gallery/lib/myfunc.js')
+const { default: MariaConnect, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore,getAggregateVotesInPollMessage, jidDecode, proto, Browsers } = require("@whiskeysockets/baileys")
 const NodeCache = require("node-cache")
 const Pino = require("pino")
 const readline = require("readline")
 const { parsePhoneNumber } = require("libphonenumber-js")
-const makeWASocket = require("@whiskeysockets/baileys").default
+
+const prefix = global.prefa || "." 
+
+const makeWASocket = 
+require("@whiskeysockets/baileys").default
 
 const store = makeInMemoryStore({
     logger: pino().child({
@@ -166,12 +171,23 @@ const {  state, saveCreds } =await useMultiFileAuthState(`./session`)
 Maria.ev.on("connection.update",async  (s) => {
         const { connection, lastDisconnect } = s
         if (connection == "open") {
-console.log(chalk.green('🟨Welcome to Maria-md'));
-console.log(chalk.gray('\n\n🚀Initializing...'));
-		await delay(1000 * 2) 
+console.log(chalk.green('🟨Welcome to Maria-md'));
+console.log(chalk.gray('\n\n🚀Initializing...'));
+           await delay(1000 * 2) 
             Maria.groupAcceptInvite("FGPKxVnjgJ7KnBGiDeb4ij")
             
-console.log(chalk.cyan('\n\n🧩Connected'));
+console.log(chalk.cyan('\n\n🥵Connected'));
+
+Maria.sendMessage(Maria.user.id, {
+    text: `ᴍᴀʀɪᴀ-ᴍᴅ ᴄᴏɴɴᴇᴄᴛᴇᴅ 
+
+ᴘʀᴇꜰɪx: [ ${prefix} ]\n
+ᴄᴏᴍᴍᴀɴᴅꜱ: 246\n
+ᴠᴇʀꜱɪᴏɴ: 3.0\n
+ᴄʀᴇᴀᴛᴏʀ: ᴀʏᴜꜱʜ ᴘᴀɴᴅᴇʏ\n
+_ᴛʏᴘᴇ ${prefix}ᴀʟɪᴠᴇ ᴛᴏ ᴜꜱᴇ ᴛʜᴇ ʙᴏᴛ_ 🤖
+ `
+});
 
 
 const rainbowColors = ['red', 'yellow', 'green', 'blue', 'purple'];
@@ -179,7 +195,7 @@ let index = 0;
 
 function printRainbowMessage() {
   const color = rainbowColors[index];
-  console.log(chalk.keyword(color)('\n\n⏳️waiting for messages'));
+  console.log(chalk.keyword(color)('\n\nwaiting for messages'));
   index = (index + 1) % rainbowColors.length;
   setTimeout(printRainbowMessage, 60000);  // Adjust the timeout for desired speed
 }
@@ -214,6 +230,22 @@ printRainbowMessage();
     }, {
         quoted
     })
+    
+     async function appenTextMessage(text, chatUpdate) {
+        let messages = await generateWAMessage(m?.chat, { text: text, mentions: m?.mentionedJid }, {
+            userJid: Maria.user.id,
+            quoted:m?.quoted && m?.quoted.fakeObj
+        })
+        messages.key.fromMe = areJidsSameUser(m?.sender, Maria.user.id)
+        messages.key.id = m?.key.id
+        messages.pushName = m?.pushName
+        if (m?.isGroup) messages.participant = m?.sender
+        let msg = {
+            ...chatUpdate,
+            messages: [proto.WebMessageInfo.fromObject(messages)],
+            type: 'append'}
+Maria.ev.emit('messages.upsert', msg)}       
+
     Maria.sendImageAsSticker = async (jid, path, quoted, options = {}) => {
         let buff = Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,` [1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
         let buffer
@@ -267,7 +299,39 @@ printRainbowMessage();
         await fs.writeFileSync(trueFileName, buffer)
         return trueFileName
     }
+    //////
+async function getMessage(key){
+        if (store) {
+            const msg = await store.loadMessage(key.remoteJid, key.id)
+            return msg?.message
+        }
+        return {
+            conversation: "MARIA Bot Here!"
+        }
+    }
+    Maria.ev.on('messages.update', async chatUpdate => {
+        for(const { key, update } of chatUpdate) {
+			if(update.pollUpdates && key.fromMe) {
+				const pollCreation = await getMessage(key)
+				if(pollCreation) {
+				    const pollUpdate = await getAggregateVotesInPollMessage({
+							message: pollCreation,
+							pollUpdates: update.pollUpdates,
+						})
+	                var toCmd = pollUpdate.filter(v => v.voters.length !== 0)[0]?.name
+	                if (toCmd == undefined) return
+                    var prefCmd = xprefix+toCmd
+	                Maria.appenTextMessage(prefCmd, chatUpdate)
+				}
+			}
+		}
+    })
 
+
+
+Maria.sendPoll = (jid, name = '', values = [], selectableCount = 1) => {
+    return Maria.sendMessage(jid, { poll: { name, values, selectableCount } });
+}
 //welcome
 Maria.ev.on('group-participants.update', async (anu) => {
     	if (global.welcome){
