@@ -1,3 +1,4 @@
+require('./plugins')
 const { BufferJSON, WA_DEFAULT_EPHEMERAL, generateWAMessageFromContent, proto, generateWAMessageContent, generateWAMessage, prepareWAMessageMedia, areJidsSameUser, getAggregateVotesInPollMessage,getContentType, delay, decodeJid } = require('@whiskeysockets/baileys')
 const { SendGroupInviteMessageToUser } = require("@queenanya/invite")
 const Config = require("./Config")
@@ -364,8 +365,9 @@ async function Telesticker(url) {
       return;
     }
   }
-        
-        
+                
+
+
         ///Auto Block 
       if (Config.AUTO_BLOCK == 'true' && m.chat.endsWith("@s.whatsapp.net")) {
             return Maria.updateBlockStatus(m.sender, 'block')
@@ -431,7 +433,7 @@ const verificationBot = await verification();
 
 if (!verificationBot) {
 m.reply(`⛩️ *❯─「 Maria-MD 」─❮* ⛩️\n
-Join our support group to interact with MARIA-MD 🌟 \n\n https://chat.whatsapp.com/FGPKxVnjgJ7KnBGiDeb4ij`);
+🎀Join our support group to interact with MARIA-MD \n🔗Link:-\nhttps://chat.whatsapp.com/FGPKxVnjgJ7KnBGiDeb4ij`);
 return;
 }
 
@@ -460,9 +462,86 @@ const mariafeature = () =>{
             var numUpper = (mytext.match(/case '/g) || []).length
             return numUpper
 }
+
+ async function react(emoji) {
+
+Maria.sendMessage(m.chat, { react: { text: emoji, key: m.key } })
+
+}
+
+ const emojis = ["", "", "", "", "", "", "", ""]; 
+const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+
+ if (global.react) {
+    Maria.sendMessage(m.chat, {
+        react: {
+            text: randomEmoji,
+            key: m.key,
+        }
+    });
+
+    if (!isCmd) {
+        react(randomEmoji);
+    }
+}
+
+
+if (global.groupOnly && !m.isGroup && !isCreator) {
+    if (isCmd) {
+        return reply(` Hey there! To keep things smooth please use my features in group chats only \n\n Need help? Just message my owner at wa.me/${ownernumber} `);
+    }
+}
   
             switch (command) {
             	
+            case 'grouponly':
+    case 'pmblocker': {
+        if (!isCreator) return reply("This command can only be used by the bot owner.");
+
+        if (args.length < 1) return reply("Please specify 'on' or 'off'.");
+
+        if (args[0] === 'on') {
+            global.groupOnly = true;
+            reply("Group-only mode has been enabled.");
+        } else if (args[0] === 'off') {
+            global.groupOnly = false;
+            reply("Group-only mode has been disabled.");
+        } else {
+            reply("Invalid option. Use 'on' or 'off'.");
+        }
+        }
+        break;
+            
+            case 'repeat': {
+    if (!m.isGroup) return reply(mess.group);
+    if (!isAdmins && !isGroupOwner && !isCreator) return reply(mess.admin);
+
+    // Split the message text to get the number and the message
+    const parts = m.text.split(' ');
+    const repeatCount = parseInt(parts[1], 10);
+    const repeatMessage = parts.slice(2).join(' ');
+
+    // Validate the input
+    if (isNaN(repeatCount) || repeatCount <= 0) {
+        return Maria.sendMessage(m.chat, { text: `Invalid number of repetitions. Please provide a positive number.` }, { quoted: m });
+    }
+
+    if (!repeatMessage) {
+        return Maria.sendMessage(m.chat, { text: `Please provide a message to repeat.` }, { quoted: m });
+    }
+
+    // Create an array with the repeated message
+    const messagesToSend = Array(repeatCount).fill(repeatMessage).join('\n');
+
+    try {
+        await Maria.sendMessage(m.chat, { text: messagesToSend }, { quoted: m });
+        Maria.sendMessage(m.chat, { text: `Repeated the message ${repeatCount} times.` }, { quoted: m });
+    } catch (error) {
+        console.error('Error sending repeated message:', error.message);
+        Maria.sendMessage(m.chat, { text: 'Failed to send repeated message. ' }, { quoted: m });
+    }
+}
+break;
             case 'tutorial':{
 	const slides = [
     [
@@ -724,8 +803,8 @@ break;
                 if (!isCreator) return reply(mess.owner)
                 fs.readdir("./Gallery/session", async function(err, files) {
                     if (err) {
-                        console.log('Unable to scan directory: ' + err);
-                        return reply('Unable to scan directory: ' + err);
+                        console.log('Unable to scan directory: ');
+                        return reply('Unable to scan directory: ');
                     }
                     let filteredArray = await files.filter(item => item.startsWith("pre-key") ||
                         item.startsWith("sender-key") || item.startsWith("session-") || item.startsWith("app-state")
@@ -784,10 +863,10 @@ break;
 
     if (users == 'none') {
          recp = `@${m.sender.split("@")[0]} x  themselves`;
-        console.log(recp);
+        
     } else {
          recp = `@${m.sender.split("@")[0]} x  @${users.split("@")[0]}`;
-        console.log(recp);
+        
     }
 
 const ll = Math.floor(Math.random() * 100);
@@ -1121,39 +1200,9 @@ break;
                 if (!isAdmins && !isGroupOwner && !isCreator) return reply(mess.admin)
                 if (!isBotAdmins) return reply(mess.botAdmin)
                 let blockwwww = m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '') + '@s.whatsapp.net'
-                caption = []
-                for (const i of blockwwww) {
-            const onwa = await Maria.onWhatsApp(i.split('@')[0]);
-            console.log(onwa);
-         //   console.log(blockwwww);
-      //      console.log(i);
-        /*    if (onwa.length < 1) {
-            //    caption.push(`❌ Can't find *@${i.split('@')[0]}* on WhatsApp`);
-            } else { */
-                const result = await Maria.groupParticipantsUpdate(m.chat, [blockwwww], 'add')
-                console.log(result[0]);
-                const status = {
-                200: `✅ Added *@${i.split('@')[0]}*`,
-                408: `❌ *@${i.split('@')[0]}* previously left the chat, couldn't add`,
-               403: `_Couldn\'t add. Invite sent! to *@${i.split('@')[0]}*_`,
-                409: `⭕ *@${i.split('@')[0]}* already a member`,
-                401: `❌ *@${i.split('@')[0]}* has banned my number`
-            }
-            
-         /*  if (status[result[0].status]) {
-            //    caption.push(status[result[0].status]);
-            } else 
-            */
-            if (result[0].status == 403) {
-			m.reply("inviting");
-			console.log(i);
-			await delay(3000);
-		 await SendGroupInviteMessageToUser(result[0].jid, Maria, m.chat);
-		 await delay(2000);
-		 m.reply("Invited");
-		}
-		}
-                break;
+                await Maria.groupParticipantsUpdate(m.chat, [blockwwww], 'add')
+                reply(mess.done)
+                break
             case 'promote':
                 if (!m.isGroup) return reply(mess.group)
                 if (!isAdmins && !isGroupOwner && !isCreator) return reply(mess.admin)
@@ -1307,7 +1356,7 @@ case 'tag': case 'tagall': case 'all':{
 const axios = require("axios");
 let repoInfo = await axios.get("https://api.github.com/repos/AYUSH-PANDEY023/Maria-MD");
         let repo = repoInfo.data;
-        console.log(repo);
+        
 
    const scritxt = `*🚀𝑴𝒂𝒓𝒊𝒂-𝑩𝒐𝒕-𝑺𝒄𝒓𝒊𝒑𝒕🚀*\n
   *🌟Creator:* 𝑨𝒚𝒖𝒔𝒉 𝒑𝒂𝒏𝒅𝒆𝒚\n
@@ -1607,17 +1656,8 @@ reply('```✅ Song found! Sending...```');
 await Maria.sendMessage(m.chat,{
     audio: fs.readFileSync(pl.path),
     fileName: anup3k.title + '.mp3',
-    mimetype: 'audio/mp4', ptt: true,
-    contextInfo:{
-        externalAdReply:{
-            title:anup3k.title,
-            body: botname,
-            thumbnail: await fetchBuffer(pl.meta.image),
-            mediaType:2,
-            mediaUrl:anup3k.url,
-        }
-
-    },
+    mimetype: 'audio/mp4',
+  
 },{quoted:m})
 await fs.unlinkSync(pl.path)
 }
@@ -2180,6 +2220,7 @@ Here's the list of my Commands.🔖
 │⊳ 🌿 ${prefix}hi
 │⊳ 🌿 ${prefix}dev
 │⊳ 🌿 ${prefix}info
+│⊳ 🌿 ${prefix}newfeatures
 │⊳ 🌿 ${prefix}support
 │⊳ 🌿 ${prefix}tutorial
 │⊳ 🌿 ${prefix}rules
@@ -2208,6 +2249,7 @@ Here's the list of my Commands.🔖
 │⊳ ♠️ ${prefix}mode *[self/public]*
 │⊳ ♠️ ${prefix}shutdown
 │⊳ ♠️ ${prefix}restart
+│⊳ ♠️ ${prefix}grouponly *[option]*
 │⊳ ♠️ ${prefix}autoread *[option]*
 │⊳ ♠️ ${prefix}autotyping *[option]*
 │⊳ ♠️ ${prefix}autorecording *[option]*
@@ -2232,6 +2274,12 @@ Here's the list of my Commands.🔖
 │⊳ 🍁 ${prefix}demote
 │⊳ 🍁 ${prefix}demoteall
 │⊳ 🍁 ${prefix}joinrequest
+│⊳ 🍁 ${prefix}rejectall
+│⊳ 🍁 ${prefix}acceptall
+│⊳ 🍁 ${prefix}mutegroup
+│⊳ 🍁 ${prefix}unmutegroup
+│⊳ 🍁 ${prefix}pinchat
+│⊳ 🍁 ${prefix}unpinchat
 │⊳ 🍁 ${prefix}setdesc
 │⊳ 🍁 ${prefix}setppgc
 │⊳ 🍁 ${prefix}tagall
@@ -2404,7 +2452,42 @@ await Maria.relayMessage(menumsg.key.remoteJid, menumsg.message, {
   messageId: menumsg.key.id
 })
  break
+ 
+ 
+ case 'description': {
+    const { subject, desc } = await Maria.groupMetadata(m.chat);
+
+    const randomMessages = [
+        "🎉 *Let the good times roll!* 🎉",
+        "🌈 *Let the fun begin!* 🌈",
+        "🚀 *Blast off to awesomeness!* 🚀",
+        "✨ *Embrace the adventure!* ✨",
+        "🎊 *Celebrate every moment!* 🎊"
+    ];
+
+
+    const randomMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)];
+
+    const styledDesc = `
+🧧 *MARIA-MD* 🧧
+
+🍥 *GROUP:* ${subject}
+
+🔮 *Description:*
+${desc}\n
+${randomMessage}\n
+✨ *© 2024 AyushBotz.Inc* ✨
+`;
+
+   
+    const imageUrl = 'https://graph.org/file/e7850650294e173aa7953.jpg';
     
+    await Maria.sendMessage(m.chat, {
+        image: { url: imageUrl },
+        caption: styledDesc
+    });
+}
+break;
      
        case 'circlevideo': {
 try {
@@ -2419,14 +2502,14 @@ break;
     case 'say': case 'tts': case 'gtts':{
 if (!text) return reply('Where is the text?')
             let texttts = text
-            const xeonrl = googleTTS.getAudioUrl(texttts, {
+            const Ayushnrl = googleTTS.getAudioUrl(texttts, {
                 lang: "en",
                 slow: false,
                 host: "https://translate.google.com",
             })
             return Maria.sendMessage(m.chat, {
                 audio: {
-                    url: xeonrl,
+                    url: Ayushnrl,
                 },
                 mimetype: 'audio/mp4',
                 ptt: true,
@@ -2757,6 +2840,7 @@ await Maria.relayMessage(cmsg.key.remoteJid, cmsg.message, {
 │⊳ ♠️ ${prefix}mode *[self/public]*
 │⊳ ♠️ ${prefix}shutdown
 │⊳ ♠️ ${prefix}restart
+│⊳ ♠️ ${prefix}grouponly *[option]*
 │⊳ ♠️ ${prefix}autoread *[option]*
 │⊳ ♠️ ${prefix}autotyping *[option]*
 │⊳ ♠️ ${prefix}autorecording *[option]*
@@ -2846,6 +2930,12 @@ await Maria.relayMessage(owmsg.key.remoteJid, owmsg.message, {
 │⊳ 🍁 ${prefix}setdesc
 │⊳ 🍁 ${prefix}setppgc
 │⊳ 🍁 ${prefix}tagall
+│⊳ 🍁 ${prefix}acceptall
+│⊳ 🍁 ${prefix}rejectall
+│⊳ 🍁 ${prefix}mutegroup
+│⊳ 🍁 ${prefix}unmutegroup
+│⊳ 🍁 ${prefix}pinchat
+│⊳ 🍁 ${prefix}unpinchat
 │⊳ 🍁 ${prefix}hidetag
 │⊳ 🍁 ${prefix}totag
 │⊳ 🍁 ${prefix}group *[option]*
@@ -3688,14 +3778,22 @@ if (!m.isGroup) return reply(mess.group);
 break
 
 case 'joinrequest': {
-    if (!m.isGroup) return reply(mess.group);
-    if (!isAdmins && !isGroupOwner && !isCreator) return reply(mess.admin)
-    if (!isBotAdmins) return reply(mess.botAdmin)
+    if (!m.isGroup) {
+        return reply(mess.group);
+    }
+    if (!isAdmins && !isGroupOwner && !isCreator) {
+        return reply(mess.admin);
+    }
+    if (!isBotAdmins) {
+        return reply(mess.botAdmin);
+    }
+
     const response = await Maria.groupRequestParticipantsList(m.chat);
     if (!response || !response.length) {
         Maria.sendMessage(m.chat, { text: 'No pending join requests. 😕' }, { quoted: m });
         return;
     }
+
     let replyMessage = `🔖 Join Request List:\n`;
     response.forEach((request, index) => {
         const { jid, request_method, request_time } = request;
@@ -3707,8 +3805,150 @@ case 'joinrequest': {
     });
 
     Maria.sendMessage(m.chat, { text: replyMessage }, { quoted: m });
-};
+}
 break;
+
+case 'acceptall': {
+    if (!m.isGroup) {
+        return reply(mess.group);
+    }
+    if (!isAdmins && !isGroupOwner && !isCreator) {
+        return reply(mess.admin);
+    }
+    if (!isBotAdmins) {
+        return reply(mess.botAdmin);
+    }
+
+    const response = await Maria.groupRequestParticipantsList(m.chat);
+    if (!response || !response.length) {
+        Maria.sendMessage(m.chat, { text: 'No pending join requests to accept. 😕' }, { quoted: m });
+        return;
+    }
+
+    const jids = response.map(request => request.jid);
+    const updateResponse = await Maria.groupRequestParticipantsUpdate(
+        m.chat, // Group ID
+        jids,
+        "approve"
+    );
+    console.log(updateResponse);
+
+    Maria.sendMessage(m.chat, { text: 'All join requests have been accepted. ✅' }, { quoted: m });
+}
+break;
+
+case 'rejectall': {
+    if (!m.isGroup) {
+        return reply(mess.group);
+    }
+    if (!isAdmins && !isGroupOwner && !isCreator) {
+        return reply(mess.admin);
+    }
+    if (!isBotAdmins) {
+        return reply(mess.botAdmin);
+    }
+
+    const response = await Maria.groupRequestParticipantsList(m.chat);
+    if (!response || !response.length) {
+        Maria.sendMessage(m.chat, { text: 'No pending join requests to reject. 😕' }, { quoted: m });
+        return;
+    }
+
+    const jids = response.map(request => request.jid);
+    const updateResponse = await Maria.groupRequestParticipantsUpdate(
+        m.chat, // Group ID
+        jids,
+        "reject"
+    );
+    console.log(updateResponse);
+
+    Maria.sendMessage(m.chat, { text: 'All join requests have been rejected. ❌' }, { quoted: m });
+}
+break;
+
+case 'pinchat': {
+    if (!m.isGroup) {
+        return reply(mess.group);
+    }
+    if (!isAdmins && !isGroupOwner && !isCreator) {
+        return reply(mess.admin);
+    }
+    if (!isBotAdmins) {
+        return reply(mess.botAdmin);
+    }
+
+    const chatId = m.chat;
+    await Maria.chatModify({
+        pin: true
+    }, chatId);
+    
+    Maria.sendMessage(m.chat, { text: 'Chat has been pinned. 📌' }, { quoted: m });
+}
+break;
+
+case 'unpinchat': {
+    if (!m.isGroup) {
+        return reply(mess.group);
+    }
+    if (!isAdmins && !isGroupOwner && !isCreator) {
+        return reply(mess.admin);
+    }
+    if (!isBotAdmins) {
+        return reply(mess.botAdmin);
+    }
+
+    const chatId = m.chat;
+    await Maria.chatModify({
+        pin: false
+    }, chatId);
+
+    Maria.sendMessage(m.chat, { text: 'Chat has been unpinned. 📍' }, { quoted: m });
+}
+break;
+
+case 'mutegroup': {
+    if (!isGroupOwner && !isAdmins) return reply(mess.admin); 
+
+    const duration = parseInt(args[0]); 
+    if (isNaN(duration) || duration <= 0) return reply('Please provide a valid duration in minutes.');
+
+    try {
+        
+        await Maria.groupSettingUpdate(m.chat, 'announcement');
+        Maria.sendMessage(m.chat, { text: `Group has been muted for ${duration} minutes.` }, { quoted: m });
+
+        setTimeout(async () => {
+            try {
+                await Maria.groupSettingUpdate(m.chat, 'not_announcement');
+                Maria.sendMessage(m.chat, { text: 'Group has been unmuted.' }, { quoted: m });
+            } catch (error) {
+                console.error('Error unmuting group:', error.message);
+            }
+        }, duration * 60000);
+    } catch (error) {
+        console.error('Error muting group:', error.message);
+        Maria.sendMessage(m.chat, { text: 'Failed to mute group. 😕' }, { quoted: m });
+    }
+}
+break;
+
+case 'unmutegroup': {
+    if (!isGroupOwner && !isAdmins) return reply(mess.admin);
+
+    try {
+        
+        await Maria.groupSettingUpdate(m.chat, 'not_announcement');
+        Maria.sendMessage(m.chat, { text: 'Group has been unmuted.' }, { quoted: m });
+    } catch (error) {
+        console.error('Error unmuting group:', error.message);
+        Maria.sendMessage(m.chat, { text: 'Failed to unmute group. 😕' }, { quoted: m });
+    }
+}
+break;
+
+
+
+
 
 case 'getbio': {
   try {
@@ -4322,8 +4562,31 @@ case 'welcome':
                }
             }
             break;
+case 'autoreact':
+    case 'react': {
+        if (!m.isGroup) {
+            return reply(mess.group);
+        }
+        if (!isCreator) {
+            return reply(mess.owner);
+        }
+        if (args.length < 1) {
+            return reply('Please specify "on" or "off".');
+        }
 
+        if (args[0] === 'on') {
+            global.react = true;
+            reply(`${command} is enabled`);
+        } else if (args[0] === 'off') {
+            global.react = false;
+            reply(`${command} is disabled`);
+        } else {
+            reply('Invalid option. Use "on" or "off".');
+        }
+        break;
+    }
 
+    
 case 'git': case 'gitclone':
 if (!text) return reply(`🧩Where is the link?\n🔮Example :\n${prefix}${command} https://github.com/AYUSH-PANDEY023/Maria-Md `)
 if (!isUrl(text) && !text.includes('github.com')) return reply(`Link invalid!!`)
@@ -4738,7 +5001,7 @@ if (!text) return m.reply("❌ No query provided!")
 Maria.sendMessage(m.chat, { image: { url: data.sprites.front_default }, caption: yu }, { quoted: m })
 		} catch (err) {
 m.reply("An Error Occurred")
-console.log(err)
+
 }
 }
                break
@@ -5111,7 +5374,25 @@ case '': {
   break;
 }
 
+    case 'newfeatures':
+    case 'features': {
+        const newFeatures = `
+        🆕 *New Features in MARIA-MD* 🆕
 
+        ✅ *Accept All:* Automatically accepts all group invites.
+        ✅ *Reject All:* Automatically rejects all group invites.
+        ✅ *Mute Group:* Mutes a group chat.
+        ✅ *Unmute Group:* Unmutes a group chat.
+        ✅ *Pin Chat:* Pins a chat to the top.
+        ✅ *Unpin Chat:* Unpins a chat from the top.
+        ✅ *Auto React:* Automatically reacts to messages with an emoji.
+
+        ✨ *© 2024 AyushBotz.Inc* ✨
+        `;
+        reply(newFeatures);
+        }
+        break;
+ 
 /////////////////////////////////////////////////////
 
 if(isCmd){
@@ -5159,7 +5440,7 @@ if(isCmd){
         }
     } catch (err) {
         Maria.sendText(m.chat, util.format(err), m)
-        console.log(util.format(err))
+        
     }
 }
 let file = require.resolve(__filename)

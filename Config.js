@@ -26,6 +26,8 @@ global.prefa = ['.']
 
 //false=disable and true=enable
 global.welcome = false //auto welcome
+global.react = false //auto react
+global.groupOnly = false;
 global.autoRecording = false //auto recording
 global.autoTyping = false //auto typing
 global.autorecordtype = false //auto typing + recording

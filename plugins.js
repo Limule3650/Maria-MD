@@ -96,7 +96,12 @@ const {  state, saveCreds } =await useMultiFileAuthState(`./session`)
          console.log(chalk.black(chalk.bgGreen(`🤖Your Pairing Code🤖: `)), chalk.black(chalk.white(code)))
       }, 3000)
    }
-
+	Maria.ev.on('contacts.update', (update) => {
+		for (let contact of update) {
+			let id = Maria.decodeJid(contact.id)
+			if (store && store.contacts) store.contacts[id] = { id, name: contact.notify }
+		}
+	});
     Maria.ev.on('messages.upsert', async chatUpdate => {
         //console.log(JSON.stringify(chatUpdate, undefined, 2))
         try {
@@ -174,7 +179,7 @@ Maria.ev.on("connection.update",async  (s) => {
 console.log(chalk.green('🟨Welcome to Maria-md'));
 console.log(chalk.gray('\n\n🚀Initializing...'));
            await delay(1000 * 2) 
-            Maria.groupAcceptInvite("FGPKxVnjgJ7KnBGiDeb4ij")
+            
             
 console.log(chalk.cyan('\n\n🥵Connected'));
 
@@ -343,7 +348,7 @@ for (let num of participants) {
 try {
 ppuser = await Maria.profilePictureUrl(num, 'image')
 } catch (err) {
-ppuser = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60'
+ppuser = 'https://graph.org/file/920d3529a75f694be1347.jpg'
 }
 try {
 ppgroup = await Maria.profilePictureUrl(anu.id, 'image')
@@ -352,8 +357,8 @@ ppgroup = 'https://i.ibb.co/RBx5SQC/avatar-group-large-v2.png?q=60'
 }
 	
 memb = metadata.participants.length
-MariaWlcm = await getBuffer(ppuser)
-MariaLft = await getBuffer(ppuser)
+MariaWlcm = await getBuffer('https://graph.org/file/920d3529a75f694be1347.jpg')
+MariaLft = await getBuffer('https://graph.org/file/3d493d49bbfae43180fef.jpg')
                 if (anu.action == 'add') {
                 const Mariabuffer = await getBuffer(ppuser)
                 let MariaName = num
@@ -366,18 +371,51 @@ Mariabody = `┌──⊰ 🎗𝑾𝑬𝑳𝑪𝑶𝑴𝑬🎗⊰
 │⊳  👥 Members: ${xmembers}th
 │⊳  🕰️ Joined: ${xtime} ${xdate}
 └──────────⊰`
-Maria.sendMessage(anu.id,
- { text: Mariabody,
- contextInfo:{
- mentionedJid:[num],
- "externalAdReply": {"showAdAttribution": true,
- "containsAutoReply": true,
- "title": ` ${global.botname}`,
-"body": `${ownername}`,
- "previewType": "PHOTO",
-"thumbnailUrl": ``,
-"thumbnail": MariaWlcm,
-"sourceUrl": `${link}`}}})
+
+let msgs = generateWAMessageFromContent(anu.id, {
+  viewOnceMessage: {
+    message: {
+        "messageContextInfo": {
+          "deviceListMetadata": {},
+          "deviceListMetadataVersion": 2
+        },
+        interactiveMessage: proto.Message.InteractiveMessage.create({
+          body: proto.Message.InteractiveMessage.Body.create({
+            text: Mariabody
+          }),
+          footer: proto.Message.InteractiveMessage.Footer.create({
+            text: botname
+          }),
+          header: proto.Message.InteractiveMessage.Header.create({
+          hasMediaAttachment: false,
+          ...await prepareWAMessageMedia({ image: MariaWlcm }, { upload: Maria.waUploadToServer })
+          }),
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+            buttons: [{
+            "name": "quick_reply",
+              "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+            },
+            {
+            "name": "quick_reply",
+              "buttonParamsJson": `{"display_text":"Description ","id":"${prefix}description"}`
+            }
+],
+          }),
+          contextInfo: {
+                  mentionedJid: [num], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: ownername,
+                  serverMessageId: 143
+                }
+                }
+       })
+    }
+  }
+}, {})
+Maria.relayMessage(anu.id, msgs.message, {})
                 } else if (anu.action == 'remove') {
                 	const Mariabuffer = await getBuffer(ppuser)
                     const Mariatime = moment.tz('Asia/Kolkata').format('HH:mm:ss')
@@ -391,18 +429,51 @@ Maria.sendMessage(anu.id,
 │⊳  👥 Members: ${Mariamembers}th
 │⊳  🕒 Time: ${Mariatime} ${Mariadate}
 └──────────⊰`
-Maria.sendMessage(anu.id,
- { text: Mariabody,
- contextInfo:{
- mentionedJid:[num],
- "externalAdReply": {"showAdAttribution": true,
- "containsAutoReply": true,
- "title": ` ${global.botname}`,
-"body": `${ownername}`,
- "previewType": "PHOTO",
-"thumbnailUrl": ``,
-"thumbnail": MariaLft,
-"sourceUrl": `${link}`}}})
+let msgs = generateWAMessageFromContent(anu.id, {
+  viewOnceMessage: {
+    message: {
+        "messageContextInfo": {
+          "deviceListMetadata": {},
+          "deviceListMetadataVersion": 2
+        },
+        interactiveMessage: proto.Message.InteractiveMessage.create({
+          body: proto.Message.InteractiveMessage.Body.create({
+            text: Mariabody
+          }),
+          footer: proto.Message.InteractiveMessage.Footer.create({
+            text: botname
+          }),
+          header: proto.Message.InteractiveMessage.Header.create({
+          hasMediaAttachment: false,
+          ...await prepareWAMessageMedia({ image: MariaLft }, { upload: Maria.waUploadToServer })
+          }),
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+            buttons: [{
+            "name": "quick_reply",
+              "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+            },
+            {
+            "name": "quick_reply",
+              "buttonParamsJson": `{"display_text":"Menu ","id":"${prefix}menu"}`
+            }
+],
+          }),
+         
+          contextInfo: {
+                  mentionedJid: [num], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: ownername,
+                  serverMessageId: 143
+                }
+                }
+       })
+    }
+  }
+}, {})
+Maria.relayMessage(anu.id, msgs.message, {})
 }
 }
 } catch (err) {
